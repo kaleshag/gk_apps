@@ -19,17 +19,11 @@ let data = {
 };
 
 // Initialize app
-document.addEventListener('DOMContentLoaded', async () => {
-    // Initialize Supabase
-    if (typeof initSupabase === 'function') {
-        await initSupabase();
-    }
-    
-    await loadData();
+document.addEventListener('DOMContentLoaded', () => {
+    loadData();
     updateDate();
     updateDisplay();
     loadGoalInput();
-    updateSyncStatus();
 });
 
 // Update current date display
@@ -40,21 +34,11 @@ function updateDate() {
     dateElement.textContent = today.toLocaleDateString('en-US', options);
 }
 
-// Load data from localStorage and cloud
-async function loadData() {
+// Load data from localStorage
+function loadData() {
     const today = new Date().toDateString();
     
-    // Try to load from cloud first if logged in
-    if (typeof syncFromCloud === 'function' && isLoggedIn()) {
-        const cloudData = await syncFromCloud();
-        if (cloudData) {
-            data = cloudData;
-            localStorage.setItem('foodTrackerData', JSON.stringify(data));
-            return;
-        }
-    }
-    
-    // Fall back to localStorage
+    // Load from localStorage
     const savedData = localStorage.getItem('foodTrackerData');
     if (savedData) {
         data = JSON.parse(savedData);
@@ -130,15 +114,10 @@ async function loadData() {
     localStorage.setItem('lastAccessDate', today);
 }
 
-// Save data to localStorage and cloud
+// Save data to localStorage
 function saveData() {
     localStorage.setItem('foodTrackerData', JSON.stringify(data));
     localStorage.setItem('lastAccessDate', new Date().toDateString());
-    
-    // Sync to cloud if logged in
-    if (typeof syncToCloud === 'function' && isLoggedIn()) {
-        syncToCloud(data);
-    }
 }
 
 // Add food item
@@ -737,98 +716,3 @@ document.addEventListener('keypress', (e) => {
 
 // ===== SUPABASE SYNC UI FUNCTIONS =====
 
-// Show login modal
-function showLoginModal() {
-    document.getElementById('loginModal').style.display = 'block';
-}
-
-// Close login modal
-function closeLoginModal() {
-    document.getElementById('loginModal').style.display = 'none';
-}
-
-// Handle sign in
-async function handleSignIn() {
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
-    
-    if (!email || !password) {
-        alert('Please enter email and password');
-        return;
-    }
-    
-    const statusEl = document.getElementById('loginStatus');
-    statusEl.textContent = 'Signing in...';
-    
-    const result = await signIn(email, password);
-    
-    if (result.success) {
-        statusEl.textContent = '✅ Signed in successfully!';
-        closeLoginModal();
-        updateSyncStatus();
-        
-        // Reload data from cloud
-        await loadData();
-        updateDisplay();
-    } else {
-        statusEl.textContent = '❌ ' + result.error;
-        statusEl.style.color = '#f56565';
-    }
-}
-
-// Handle sign up
-async function handleSignUp() {
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
-    
-    if (!email || !password) {
-        alert('Please enter email and password');
-        return;
-    }
-    
-    if (password.length < 6) {
-        alert('Password must be at least 6 characters');
-        return;
-    }
-    
-    const statusEl = document.getElementById('loginStatus');
-    statusEl.textContent = 'Creating account...';
-    
-    const result = await signUp(email, password);
-    
-    if (result.success) {
-        statusEl.textContent = '✅ ' + result.message;
-        statusEl.style.color = '#48bb78';
-    } else {
-        statusEl.textContent = '❌ ' + result.error;
-        statusEl.style.color = '#f56565';
-    }
-}
-
-// Handle sign out
-async function handleSignOut() {
-    if (confirm('Sign out? Your data will remain on this device.')) {
-        await signOut();
-        updateSyncStatus();
-        alert('Signed out successfully');
-    }
-}
-
-// Update sync status indicator
-function updateSyncStatus() {
-    const indicator = document.getElementById('syncIndicator');
-    const loginBtn = document.getElementById('loginBtn');
-    
-    if (typeof isLoggedIn === 'function' && isLoggedIn()) {
-        const user = getCurrentUser();
-        indicator.textContent = '☁️ Synced: ' + user.email;
-        indicator.className = 'sync-indicator-online';
-        loginBtn.textContent = 'Sign Out';
-        loginBtn.onclick = handleSignOut;
-    } else {
-        indicator.textContent = '📱 Offline Mode';
-        indicator.className = '';
-        loginBtn.textContent = 'Sign In';
-        loginBtn.onclick = showLoginModal;
-    }
-}
