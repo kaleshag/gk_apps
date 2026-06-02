@@ -1,24 +1,24 @@
 // Supabase Sync Module
 // Handles cloud synchronization of health tracker data
 
-let supabase = null;
+let supabaseClient = null;
 let currentUser = null;
 let syncEnabled = false;
 
 // Initialize Supabase client
 function initSupabase() {
     try {
-        if (typeof SUPABASE_CONFIG === 'undefined' || 
+        if (typeof SUPABASE_CONFIG === 'undefined' ||
             SUPABASE_CONFIG.anonKey === 'YOUR_SUPABASE_ANON_KEY_HERE') {
             console.log('Supabase not configured - running in offline mode');
             return false;
         }
 
-        const { createClient } = supabase;
-        supabase = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+        const { createClient } = window.supabase;
+        supabaseClient = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
         
         // Check if user is already logged in
-        supabase.auth.getSession().then(({ data: { session } }) => {
+        supabaseClient.auth.getSession().then(({ data: { session } }) => {
             if (session) {
                 currentUser = session.user;
                 syncEnabled = true;
@@ -37,7 +37,7 @@ function initSupabase() {
 // Sign in with email
 async function signIn(email, password) {
     try {
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
             email,
             password
         });
@@ -61,7 +61,7 @@ async function signIn(email, password) {
 // Sign up new user
 async function signUp(email, password) {
     try {
-        const { data, error } = await supabase.auth.signUp({
+        const { data, error } = await supabaseClient.auth.signUp({
             email,
             password
         });
@@ -78,7 +78,7 @@ async function signUp(email, password) {
 // Sign out
 async function signOut() {
     try {
-        await supabase.auth.signOut();
+        await supabaseClient.auth.signOut();
         currentUser = null;
         syncEnabled = false;
         console.log('Signed out successfully');
@@ -98,7 +98,7 @@ async function syncToCloud(data) {
 
     try {
         // Upsert current day's data
-        const { error } = await supabase
+        const { error } = await supabaseClient
             .from('health_data')
             .upsert({
                 user_id: currentUser.id,
@@ -127,7 +127,7 @@ async function syncFromCloud() {
         const today = new Date().toDateString();
         
         // Get today's data
-        const { data: cloudData, error } = await supabase
+        const { data: cloudData, error } = await supabaseClient
             .from('health_data')
             .select('*')
             .eq('user_id', currentUser.id)
@@ -157,7 +157,7 @@ async function getHistoryFromCloud() {
     }
 
     try {
-        const { data: historyData, error } = await supabase
+        const { data: historyData, error } = await supabaseClient
             .from('health_data')
             .select('*')
             .eq('user_id', currentUser.id)
