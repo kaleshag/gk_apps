@@ -60,10 +60,16 @@ header h1 {
     opacity: 0.9;
 }
 
-.calorie-count, .habit-count {
+.calorie-count, .habit-count, .macro-count {
     font-size: 3em;
     font-weight: bold;
     margin: 10px 0;
+}
+
+.macro-goal {
+    font-size: 1em;
+    opacity: 0.8;
+    margin-top: 5px;
 }
 
 .calorie-breakdown {
@@ -273,17 +279,30 @@ button {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .food-name {
     font-weight: 600;
     color: #333;
+    flex: 1;
+    min-width: 120px;
 }
 
 .food-calories {
     color: #667eea;
     font-weight: bold;
+}
+
+.food-macros {
+    font-size: 0.85em;
+    color: #666;
+    background: #f0f0f0;
+    padding: 4px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
 }
 
 .delete-btn {

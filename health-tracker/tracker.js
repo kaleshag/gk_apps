@@ -3,6 +3,9 @@
 // Maintenance calories for 34yr, 68kg, 166.5cm: ~1800-2000 cal/day
 let data = {
     calorieGoal: 1900, // Adjusted for maintenance at your stats
+    proteinGoal: 150, // grams per day (2.2g per kg body weight)
+    carbsGoal: 200, // grams per day
+    fatGoal: 60, // grams per day
     waterGoal: 4.0, // 4 liters per day
     stepsGoal: 10000, // 10,000 steps per day
     sleepGoal: 7.5, // 7-8 hours per day
@@ -129,10 +132,16 @@ function saveData() {
 function addFood() {
     const nameInput = document.getElementById('foodName');
     const caloriesInput = document.getElementById('foodCalories');
+    const proteinInput = document.getElementById('foodProtein');
+    const carbsInput = document.getElementById('foodCarbs');
+    const fatInput = document.getElementById('foodFat');
     const mealTypeSelect = document.getElementById('mealType');
     
     const name = nameInput.value.trim();
     const calories = parseInt(caloriesInput.value);
+    const protein = parseFloat(proteinInput.value) || 0;
+    const carbs = parseFloat(carbsInput.value) || 0;
+    const fat = parseFloat(fatInput.value) || 0;
     const mealType = mealTypeSelect.value;
     
     if (!name || !calories || calories < 0) {
@@ -144,6 +153,9 @@ function addFood() {
         id: Date.now(),
         name,
         calories,
+        protein,
+        carbs,
+        fat,
         mealType,
         timestamp: new Date().toISOString()
     };
@@ -155,6 +167,9 @@ function addFood() {
     // Clear inputs
     nameInput.value = '';
     caloriesInput.value = '';
+    proteinInput.value = '';
+    carbsInput.value = '';
+    fatInput.value = '';
 }
 
 // Delete food item
@@ -314,6 +329,21 @@ function calculateTotalCalories() {
     return data.foods.reduce((total, food) => total + food.calories, 0);
 }
 
+// Calculate total protein
+function calculateTotalProtein() {
+    return data.foods.reduce((total, food) => total + (food.protein || 0), 0);
+}
+
+// Calculate total carbs
+function calculateTotalCarbs() {
+    return data.foods.reduce((total, food) => total + (food.carbs || 0), 0);
+}
+
+// Calculate total fat
+function calculateTotalFat() {
+    return data.foods.reduce((total, food) => total + (food.fat || 0), 0);
+}
+
 // Calculate total calories burned
 function calculateTotalBurned() {
     return data.workouts.reduce((total, workout) => total + workout.calories, 0);
@@ -358,6 +388,7 @@ function calculateNetCalories() {
 // Update all displays
 function updateDisplay() {
     updateCalorieDisplay();
+    updateMacroDisplay();
     updateWaterDisplay();
     updateStepsDisplay();
     updateSleepDisplay();
@@ -392,6 +423,63 @@ function updateCalorieDisplay() {
         netElement.style.color = '#ed8936';
     } else {
         netElement.style.color = 'white';
+    }
+}
+
+// Update macro display
+function updateMacroDisplay() {
+    const totalProtein = calculateTotalProtein();
+    const totalCarbs = calculateTotalCarbs();
+    const totalFat = calculateTotalFat();
+    
+    const proteinEl = document.getElementById('totalProtein');
+    const carbsEl = document.getElementById('totalCarbs');
+    const fatEl = document.getElementById('totalFat');
+    const proteinGoalEl = document.getElementById('proteinGoal');
+    const carbsGoalEl = document.getElementById('carbsGoal');
+    const fatGoalEl = document.getElementById('fatGoal');
+    
+    if (proteinEl) proteinEl.textContent = totalProtein.toFixed(1) + 'g';
+    if (carbsEl) carbsEl.textContent = totalCarbs.toFixed(1) + 'g';
+    if (fatEl) fatEl.textContent = totalFat.toFixed(1) + 'g';
+    if (proteinGoalEl) proteinGoalEl.textContent = data.proteinGoal;
+    if (carbsGoalEl) carbsGoalEl.textContent = data.carbsGoal;
+    if (fatGoalEl) fatGoalEl.textContent = data.fatGoal;
+    
+    // Color code protein based on goal
+    if (proteinEl) {
+        const proteinPercentage = (totalProtein / data.proteinGoal) * 100;
+        if (proteinPercentage >= 100) {
+            proteinEl.style.color = '#48bb78';
+        } else if (proteinPercentage >= 80) {
+            proteinEl.style.color = '#ed8936';
+        } else {
+            proteinEl.style.color = 'white';
+        }
+    }
+    
+    // Color code carbs based on goal
+    if (carbsEl) {
+        const carbsPercentage = (totalCarbs / data.carbsGoal) * 100;
+        if (carbsPercentage >= 100) {
+            carbsEl.style.color = '#48bb78';
+        } else if (carbsPercentage >= 80) {
+            carbsEl.style.color = '#ed8936';
+        } else {
+            carbsEl.style.color = 'white';
+        }
+    }
+    
+    // Color code fat based on goal
+    if (fatEl) {
+        const fatPercentage = (totalFat / data.fatGoal) * 100;
+        if (fatPercentage >= 100) {
+            fatEl.style.color = '#48bb78';
+        } else if (fatPercentage >= 80) {
+            fatEl.style.color = '#ed8936';
+        } else {
+            fatEl.style.color = 'white';
+        }
     }
 }
 
@@ -467,13 +555,22 @@ function updateFoodLists() {
         if (mealFoods.length === 0) {
             listElement.innerHTML = '<li style="color: #999; font-style: italic;">No items yet</li>';
         } else {
-            listElement.innerHTML = mealFoods.map(food => `
-                <li class="food-item">
-                    <span class="food-name">${food.name}</span>
-                    <span class="food-calories">${food.calories} cal</span>
-                    <button class="delete-btn" onclick="deleteFood(${food.id})">×</button>
-                </li>
-            `).join('');
+            listElement.innerHTML = mealFoods.map(food => {
+                const macros = [];
+                if (food.protein > 0) macros.push(`P: ${food.protein}g`);
+                if (food.carbs > 0) macros.push(`C: ${food.carbs}g`);
+                if (food.fat > 0) macros.push(`F: ${food.fat}g`);
+                const macroText = macros.length > 0 ? `<span class="food-macros">${macros.join(' | ')}</span>` : '';
+                
+                return `
+                    <li class="food-item">
+                        <span class="food-name">${food.name}</span>
+                        <span class="food-calories">${food.calories} cal</span>
+                        ${macroText}
+                        <button class="delete-btn" onclick="deleteFood(${food.id})">×</button>
+                    </li>
+                `;
+            }).join('');
         }
     });
 }
