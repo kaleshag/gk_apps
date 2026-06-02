@@ -6,7 +6,7 @@ let currentUser = null;
 let syncEnabled = false;
 
 // Initialize Supabase client
-function initSupabase() {
+async function initSupabase() {
     try {
         if (typeof SUPABASE_CONFIG === 'undefined' ||
             SUPABASE_CONFIG.anonKey === 'YOUR_SUPABASE_ANON_KEY_HERE') {
@@ -15,15 +15,38 @@ function initSupabase() {
         }
 
         const { createClient } = window.supabase;
-        supabaseClient = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+        supabaseClient = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey, {
+            auth: {
+                persistSession: true,
+                autoRefreshToken: true,
+                detectSessionInUrl: true
+            }
+        });
         
         // Check if user is already logged in
-        supabaseClient.auth.getSession().then(({ data: { session } }) => {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session) {
+            currentUser = session.user;
+            syncEnabled = true;
+            console.log('User already logged in:', currentUser.email);
+            return true;
+        }
+        
+        // Listen for auth changes
+        supabaseClient.auth.onAuthStateChange((event, session) => {
+            console.log('Auth state changed:', event);
             if (session) {
                 currentUser = session.user;
                 syncEnabled = true;
-                console.log('User already logged in:', currentUser.email);
-                syncFromCloud();
+                if (typeof updateSyncStatus === 'function') {
+                    updateSyncStatus();
+                }
+            } else {
+                currentUser = null;
+                syncEnabled = false;
+                if (typeof updateSyncStatus === 'function') {
+                    updateSyncStatus();
+                }
             }
         });
 
@@ -46,10 +69,7 @@ async function signIn(email, password) {
 
         currentUser = data.user;
         syncEnabled = true;
-        console.log('Signed in successfully');
-        
-        // Sync data after login
-        await syncFromCloud();
+        console.log('Signed in successfully:', currentUser.email);
         
         return { success: true, user: data.user };
     } catch (error) {
@@ -197,5 +217,3 @@ if (typeof module !== 'undefined' && module.exports) {
         getCurrentUser
     };
 }
-
-// Made with Bob

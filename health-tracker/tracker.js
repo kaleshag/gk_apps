@@ -19,7 +19,7 @@ let data = {
 document.addEventListener('DOMContentLoaded', async () => {
     // Initialize Supabase
     if (typeof initSupabase === 'function') {
-        initSupabase();
+        await initSupabase();
     }
     
     await loadData();
@@ -654,12 +654,12 @@ async function handleSignIn() {
     
     if (result.success) {
         statusEl.textContent = '✅ Signed in successfully!';
-        setTimeout(() => {
-            closeLoginModal();
-            updateSyncStatus();
-            loadData(); // Reload data from cloud
-            updateDisplay();
-        }, 1000);
+        closeLoginModal();
+        updateSyncStatus();
+        
+        // Reload data from cloud
+        await loadData();
+        updateDisplay();
     } else {
         statusEl.textContent = '❌ ' + result.error;
         statusEl.style.color = '#f56565';
