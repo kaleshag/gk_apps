@@ -63,11 +63,24 @@ async function loadData() {
         if (!data.waterGoal) data.waterGoal = 4.0;
         if (!data.stepsGoal) data.stepsGoal = 10000;
         if (!data.sleepGoal) data.sleepGoal = 7.5;
+        if (!data.proteinGoal) data.proteinGoal = 150;
+        if (!data.carbsGoal) data.carbsGoal = 200;
+        if (!data.fatGoal) data.fatGoal = 60;
         if (!data.workouts) data.workouts = [];
         if (!data.waterIntake) data.waterIntake = 0;
         if (!data.steps) data.steps = 0;
         if (!data.sleepHours) data.sleepHours = 0;
         if (!data.history) data.history = [];
+        
+        // Fix old food entries that might not have macros
+        if (data.foods && data.foods.length > 0) {
+            data.foods = data.foods.map(f => {
+                if (!f.protein) f.protein = 0;
+                if (!f.carbs) f.carbs = 0;
+                if (!f.fat) f.fat = 0;
+                return f;
+            });
+        }
         
         // Fix old workout entries that might not have proper structure
         if (data.workouts && data.workouts.length > 0) {
