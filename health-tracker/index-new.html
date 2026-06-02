@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food & Habits Tracker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🍎 Food & Habits Tracker</h1>
+            <div class="date-display" id="currentDate"></div>
+        </header>
+
+        <div class="summary-cards">
+            <div class="card">
+                <h3>Net Calories</h3>
+                <div class="calorie-count" id="netCalories">0</div>
+                <div class="calorie-breakdown">
+                    <span>Consumed: <span id="totalCalories">0</span></span>
+                    <span>Burned: <span id="totalBurned">0</span></span>
+                </div>
+                <div class="calorie-goal">Goal: <span id="calorieGoal">1900</span></div>
+            </div>
+            <div class="card">
+                <h3>💧 Water Intake</h3>
+                <div class="water-count" id="waterIntake">0.0L</div>
+                <div class="water-goal">Goal: 4.0L</div>
+                <div class="water-controls">
+                    <button onclick="addWater(0.25)" class="btn-water">+250ml</button>
+                    <button onclick="addWater(0.5)" class="btn-water">+500ml</button>
+                    <button onclick="addWater(1)" class="btn-water">+1L</button>
+                </div>
+            </div>
+            <div class="card">
+                <h3>🚶 Steps Today</h3>
+                <div class="steps-count" id="stepsCount">0</div>
+                <div class="steps-goal">Goal: 10,000</div>
+                <div class="steps-controls">
+                    <input type="number" id="stepsInput" placeholder="Add steps" min="0" style="width: 120px; padding: 8px; border-radius: 6px; border: 2px solid white; background: rgba(255,255,255,0.3); color: white; margin-right: 5px;">
+                    <button onclick="addSteps()" class="btn-water">Add</button>
+                </div>
+            </div>
+            <div class="card">
+                <h3>😴 Sleep</h3>
+                <div class="sleep-count" id="sleepHours">0.0h</div>
+                <div class="sleep-goal">Goal: 7-8h</div>
+                <div class="sleep-controls">
+                    <input type="number" id="sleepInput" placeholder="Hours" min="0" max="24" step="0.5" style="width: 100px; padding: 8px; border-radius: 6px; border: 2px solid white; background: rgba(255,255,255,0.3); color: white; margin-right: 5px;">
+                    <button onclick="setSleep()" class="btn-water">Set</button>
+                </div>
+            </div>
+        </div>
+
+        <section class="food-section">
+            <h2>Food Log</h2>
+            <div class="input-group">
+                <input type="text" id="foodName" placeholder="Food name" />
+                <input type="number" id="foodCalories" placeholder="Calories" min="0" />
+                <select id="mealType">
+                    <option value="breakfast">Breakfast</option>
+                    <option value="lunch">Lunch</option>
+                    <option value="dinner">Dinner</option>
+                    <option value="snack">Snack</option>
+                    <option value="pre-workout">Pre-Workout</option>
+                    <option value="post-workout">Post-Workout</option>
+                </select>
+                <button onclick="addFood()" class="btn-add">Add Food</button>
+            </div>
+
+            <div class="meals-container">
+                <div class="meal-group">
+                    <h3>🌅 Breakfast</h3>
+                    <ul id="breakfast-list" class="food-list"></ul>
+                </div>
+                <div class="meal-group">
+                    <h3>☀️ Lunch</h3>
+                    <ul id="lunch-list" class="food-list"></ul>
+                </div>
+                <div class="meal-group">
+                    <h3>🌙 Dinner</h3>
+                    <ul id="dinner-list" class="food-list"></ul>
+                </div>
+                <div class="meal-group">
+                    <h3>🍪 Snacks</h3>
+                    <ul id="snack-list" class="food-list"></ul>
+                </div>
+                <div class="meal-group">
+                    <h3>💪 Pre-Workout</h3>
+                    <ul id="pre-workout-list" class="food-list"></ul>
+                </div>
+                <div class="meal-group">
+                    <h3>🏋️ Post-Workout</h3>
+                    <ul id="post-workout-list" class="food-list"></ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="workout-section">
+            <h2>💪 Workout Log</h2>
+            <div class="input-group">
+                <input type="text" id="workoutName" placeholder="Exercise name (e.g., Running, Cycling)" />
+                <input type="number" id="workoutDuration" placeholder="Duration (minutes)" min="0" />
+                <input type="number" id="workoutCalories" placeholder="Calories burned" min="0" />
+                <button onclick="addWorkout()" class="btn-add">Add Workout</button>
+            </div>
+            <ul id="workout-list" class="workout-list"></ul>
+        </section>
+
+        <section class="habits-section">
+            <h2>Daily Habits</h2>
+            <div class="input-group">
+                <input type="text" id="habitName" placeholder="New habit (e.g., Drink 8 glasses of water)" />
+                <button onclick="addHabit()" class="btn-add">Add Habit</button>
+            </div>
+            <ul id="habits-list" class="habits-list"></ul>
+        </section>
+
+        <section class="settings-section">
+            <h2>Settings</h2>
+            <div class="input-group">
+                <label for="goalInput">Daily Calorie Goal:</label>
+                <input type="number" id="goalInput" min="0" />
+                <button onclick="updateGoal()" class="btn-update">Update Goal</button>
+            </div>
+            <button onclick="clearToday()" class="btn-clear">Clear Today's Data</button>
+            <button onclick="exportData()" class="btn-export">Export History</button>
+        </section>
+    </div>
+
+    <script src="app.js?v=3.0"></script>
+</body>
+</html>
